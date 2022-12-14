@@ -6,7 +6,7 @@ const { Tag, Product, ProductTag } = require('../../models');
 // find all tags
 router.get('/', async (req, res) => {
   try{
-    const tagData = await Tag.findAll({include: Product });
+    const tagData = await Tag.findAll({include: [{ all: true, nested: true }] });
     res.status(200).json(tagData);
   } catch (err) {
     res.status(500).json(err);
@@ -18,12 +18,12 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const tagData = await Tag.findByPk(req.params.id, {
-      include: { Product }
-    })
+      include: [{ all: true, nested: true }] });
     if (!tagData) {
       res.status(404).json({message: "There is no Tag with this id"});
       return;
     }
+    res.status(200).json(tagData);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -43,9 +43,18 @@ router.post('/', async (req, res) => {
 // update a tag's name by its `id` value
 router.put('/:id', async (req, res) => {
   try{
-    const tagData = await Tag.findByPk(req.params.id);
+    const tagData = await Tag.update({
+      id: req.body.id,
+      tag_name: req.body.tag_name
+    },
+    {
+      where: {
+        id: req.body.id
+      }
+    })
     res.status(200).json(tagData);
-  } catch (err) {
+  }
+  catch (err) {
     res.status(500).json(err);
   }
 });

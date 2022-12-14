@@ -6,7 +6,7 @@ const { Category, Product, Tag } = require('../../models');
 // find all categories
 router.get('/', async (req, res) => {
   try{
-    const categoryData = Category.findAll();
+    const categoryData = await Category.findAll({include: Product});
     res.status(200).json(categoryData);
   } catch (err) {
     res.status(500).json(err);
@@ -16,9 +16,7 @@ router.get('/', async (req, res) => {
 // find one category by its `id` value
 router.get('/:id', async (req, res) => {
   try {
-    const categoryData = Category.findByPk(req.params.id, {
-      include: [{model: Product, through: Tag, as: 'item_tags'}]
-    });
+    const categoryData = await Category.findByPk(req.params.id, {include: Product});
     if (!categoryData) {
       res.status(404).json({message: "There is no Category with that id"});
       return;
@@ -33,7 +31,7 @@ router.get('/:id', async (req, res) => {
 // create a new category
 router.post('/', async (req, res) => {
   try{
-    const categoryData = Category.create(req.body);
+    const categoryData = await Category.create(req.body);
     res.status(200).json(categoryData);
   } catch (err) {
     res.status(500).json(err);
@@ -44,7 +42,13 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try{
     const categoryData = await Category.update({
+      id: req.body.id,
       category_name: req.body.category_name
+    },
+    {
+      where: {
+        id: req.body.id
+    }
     })
     res.status(200).json(categoryData);
   }
